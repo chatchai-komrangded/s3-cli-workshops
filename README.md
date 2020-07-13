@@ -1,8 +1,11 @@
-# Amazon CLI S3 workshops example
+# Amazon CLI S3 example
 ## HOW TO: Using Amazon CLI for Amazon S3
 ## Reference
 https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html
-### Pre-requisites:
+
+https://medium.com/@selvakumar.ponnusamy/resumable-file-upload-with-s3-ce039cbc8865
+
+## Pre-requisites
 - Provision Cloud9 IDE
 ---
 ## Step to follow How to Amazon CLI on S3
@@ -132,7 +135,11 @@ As previously mentioned, the s3 command set includes cp, mv, ls, and rm, and the
     aws s3 rm s3://my-bucket/path --recursive
 
 
-When you use the --recursive option on a directory or folder with cp, mv, or rm, the command walks the directory tree, including all subdirectories. These commands also accept the --exclude, --include    
+When you use the --recursive option on a directory or folder with cp, mv, or rm, the command walks the directory tree, including all subdirectories. These commands also accept the --exclude, --include  
+
+All high-level commands that involve uploading objects into an Amazon S3 bucket (s3 cp, s3 mv, and s3 sync) automatically perform a multipart upload when the object is large.
+
+Failed uploads can't be resumed when using these commands. If the multipart upload fails due to a timeout or is manually canceled by pressing Ctrl+C, the AWS CLI cleans up any files created and aborts the upload. This process can take several minutes.
 
 
 
