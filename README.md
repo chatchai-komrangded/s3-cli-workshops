@@ -1,9 +1,7 @@
-# Amazon CLI S3 example
+# Amazon CLI S3 Example
 ## HOW TO: Using Amazon CLI for Amazon S3
 ## Reference
 https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html
-
-https://medium.com/@selvakumar.ponnusamy/resumable-file-upload-with-s3-ce039cbc8865
 
 ## Pre-requisites
 - Provision Cloud9 IDE
@@ -49,6 +47,8 @@ You can also specify a nondefault storage class (REDUCED_REDUNDANCY or STANDARD_
 
     aws s3 cp file.txt s3://chatkom-global-uniques/ --storage-class REDUCED_REDUNDANCY
 
+    aws s3 cp file.txt s3://chatkom-global-uniques/path/file.txt
+
 The s3 sync command uses the following syntax. Possible source-target combinations are:
 
 - Local file system to Amazon S3
@@ -63,8 +63,14 @@ The following example synchronizes the contents of an Amazon S3 folder named pat
 
 The following example, which extends the previous one, shows how this works
     
+    // Touch file
+    touch MyFile1.txt
+   
+    // Sync file 
+    aws s3 sync . s3://chatkom-global-uniques/path
+
     // Delete local file
-    rm ./MyFile1.txt
+    rm MyFile1.txt
 
     // Attempt sync without --delete option - nothing happens
     aws s3 sync . s3://chatkom-global-uniques/path
@@ -73,9 +79,9 @@ The following example, which extends the previous one, shows how this works
     aws s3 sync . s3://chatkom-global-uniques/path --delete
 
     // Delete object from bucket
-    aws s3 rm s3://chatkom-global-uniques/path/MySubdirectory/MyFile3.txt
+    aws s3 rm s3://chatkom-global-uniques/path/file.txt
 
-    // Sync with deletion - local file is deleted
+    // (** DO NOT RUN during the lab) Sync with deletion - local file is deleted
     aws s3 sync s3://chatkom-global-uniques/path . --delete
 
     // Sync with Infrequent Access storage class
@@ -88,51 +94,67 @@ You can use the --exclude and --include options to specify rules that filter the
     MyFile2.rtf
     MyFile88.txt
 
-    aws s3 sync . s3://chatkom-global-uniquespath --exclude "*.txt"
-    aws s3 sync . s3://chatkom-global-uniques/path --exclude "*.txt" --include 
+    touch MyFile1.txt MyFile2.rtf MyFile88.txt
+
+    aws s3 sync . s3://chatkom-global-uniques/path --exclude "*.txt"
+    aws s3 sync . s3://chatkom-global-uniques/path --exclude "*.txt" --include "MyFile*.txt"
+
+    echo "V2" > MyFile1.txt
+    echo "V2" > MyFile2.txt
+    echo "V2" > MyFile88.txt
+    
     aws s3 sync . s3://chatkom-global-uniques/path --exclude "*.txt" --include "MyFile*.txt" --exclude "MyFile?.txt"
 
 The --exclude and --include options also filter files or objects to be deleted during an s3 sync operation that includes the --delete option. In this case, the parameter string must specify files to exclude from, or include for, deletion in the context of the target directory or bucket. The following shows an example.
 
-    Assume local directory and s3://my-bucket/path currently in sync and each contains 3 files:
+    Assume local directory and s3://chatkom-global-uniques/path currently in sync and each contains 3 files:
     MyFile1.txt
     MyFile2.rtf
     MyFile88.txt
+
+    // Touch new file again
+    touch MyFile1.txt MyFile2.rtf MyFile88.txt
+
+    // Sync to S3
+    aws s3 sync . s3://chatkom-global-uniques/path
 
     // Delete local .txt files
     rm *.txt
 
     // Sync with delete, excluding files that match a pattern. MyFile88.txt is deleted, while remote MyFile1.txt is not.
-    aws s3 sync . s3://my-bucket/path --delete --exclude "my-bucket/path/MyFile?.txt"
+    aws s3 sync . s3://chatkom-global-uniques/path --delete --exclude "chatkom-global-uniques/path/MyFile?.txt"
 
     // Delete MyFile2.rtf
-    aws s3 rm s3://my-bucket/path/MyFile2.rtf
+    aws s3 rm s3://chatkom-global-uniques/path/MyFile2.rtf
 
     // Sync with delete, excluding MyFile2.rtf - local file is NOT deleted
-    aws s3 sync s3://my-bucket/path . --delete --exclude "./MyFile2.rtf"
+    aws s3 sync s3://chatkom-global-uniques/path . --delete --exclude "MyFile2.rtf"
 
     // Sync with delete, local copy of MyFile2.rtf is deleted
-    aws s3 sync s3://my-bucket/path . --delete
+    aws s3 sync s3://chatkom-global-uniques/path . --delete
 
 As previously mentioned, the s3 command set includes cp, mv, ls, and rm, and they work in similar ways to their Unix counterparts. The following are some examples.
 
-    // Copy MyFile.txt in current directory to s3://my-bucket/path
-    aws s3 cp MyFile.txt s3://my-bucket/path/
+    // Touch new file again
+    touch MyFile1.txt MyFile2.rtf MyFile88.txt Myimg.jpg
 
-    / /Move all .jpg files in s3://my-bucket/path to ./MyDirectory
-    aws s3 mv s3://my-bucket/path ./MyDirectory --exclude "*" --include "*.jpg" --recursive
+    // Sync to S3
+    aws s3 sync . s3://chatkom-global-uniques/path
+
+    / /Move all .jpg files in s3://chatkom-global-uniques/path to ./MyDirectory
+    aws s3 mv s3://chatkom-global-uniques/path ./MyDirectory --exclude "*" --include "*.jpg" --recursive
 
     // List the contents of my-bucket
-    aws s3 ls s3://my-bucket
+    aws s3 ls s3://chatkom-global-uniques
 
     // List the contents of path in my-bucket
-    aws s3 ls s3://my-bucket/path/
+    aws s3 ls s3://chatkom-global-uniques/path/
 
     // Delete s3://my-bucket/path/MyFile.txt
-    aws s3 rm s3://my-bucket/path/MyFile.txt
+    aws s3 rm s3://chatkom-global-uniques/path/MyFile.txt
 
     // Delete s3://my-bucket/path and all of its contents
-    aws s3 rm s3://my-bucket/path --recursive
+    aws s3 rm s3://chatkom-global-uniques/path --recursive
 
 
 When you use the --recursive option on a directory or folder with cp, mv, or rm, the command walks the directory tree, including all subdirectories. These commands also accept the --exclude, --include  
@@ -142,6 +164,6 @@ All high-level commands that involve uploading objects into an Amazon S3 bucket 
 Failed uploads can't be resumed when using these commands. If the multipart upload fails due to a timeout or is manually canceled by pressing Ctrl+C, the AWS CLI cleans up any files created and aborts the upload. This process can take several minutes.
 
 
-
+# Congrats, You are ready to use AWS S3 CLI to move your data to Amazon S3 !
 
 
